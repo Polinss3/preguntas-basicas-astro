@@ -1,0 +1,159 @@
+---
+import BotonesPreguntas from "./BotonesPreguntas.astro";
+import turso from "../lib/turso";
+
+// Función para obtener los datos de la base de datos
+async function fetchData() {
+  try {
+    const result = await turso.execute("SELECT * FROM questionsTable");
+    console.log("Query result:", result);
+    return result.rows; // Asumiendo que el resultado tiene una propiedad `rows`
+  } catch (error) {
+    console.error("Error executing query:", error);
+    return [];
+  }
+}
+
+const data = await fetchData();
+let currentQuestionIndex = 0;
+
+// Funciones para navegar entre preguntas
+const handlePrevious = async () => {
+  console.log("Previous question");
+  currentQuestionIndex = (currentQuestionIndex - 1 + data.length) % data.length;
+  updateQuestion();
+}
+
+function handleNext() {
+  console.log("Next question");
+  currentQuestionIndex = (currentQuestionIndex + 1) % data.length;
+  updateQuestion();
+}
+
+function updateQuestion() {
+  const questionElement = document.querySelector('.article-preguntas h2');
+  const answerElement = document.querySelector('.article-respuestas p');
+  const currentQuestion = data[currentQuestionIndex] || {};
+
+  if (questionElement) {
+    questionElement.textContent = String(currentQuestion.question) || "Cargando pregunta...";
+  }
+
+  if (answerElement) {
+    answerElement.textContent = String(currentQuestion.answer) || "Cargando respuesta...";
+  }
+}
+
+// Inicializar la primera pregunta
+if (typeof window !== 'undefined') {
+  window.handlePrevious = handlePrevious;
+  window.handleNext = handleNext;
+  
+  window.addEventListener('load', () => {
+    updateQuestion();
+  });
+}
+---
+
+<section class="section-preguntas">
+  <article class="article-titulo">
+    <h1>Quiz preguntas básicas</h1>
+  </article>
+  <article class="article-preguntas">
+    <h2>Cargando pregunta...</h2>
+  </article>
+  <article class="article-botones">
+    <div class="contenedor-botones-preguntas">
+        <BotonesPreguntas color="#c2c2c2" text="Anterior" onButtonClick={handlePrevious} />
+      <BotonesPreguntas color="#ff000099" text="Pista" />
+      <BotonesPreguntas color="#00ff0099" text="Verificar" />
+      <BotonesPreguntas color="#c2c2c2" text="Saltar" onButtonClick={handleNext} />
+    </div>
+  </article>
+  <article class="article-respuestas">
+    <p>Cargando respuesta...</p>
+  </article>
+</section>
+
+
+
+
+
+
+
+
+<style>
+  .section-preguntas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100%;
+    background-color: #f1f1f1;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: flex-start;
+  }
+  .article-titulo {
+    background-color: #f4bfbf;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 20%;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+  }
+  .article-titulo h1 {
+    font-size: 5em;
+    color: #000;
+  }
+  .article-preguntas {
+    background-color: #f9a4a4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 25%;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+  }
+
+  .article-preguntas h2 {
+    font-size: 3em;
+    color: #000;
+  }
+  .article-botones {
+    background-color: #f7a061;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 15%;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+  }
+  .contenedor-botones-preguntas {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 40%;
+    height: 100%;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: space-evenly;
+  }
+
+  .article-respuestas {
+    background-color: #f9a4a4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 40%;
+    padding-top: 10px;
+  }
+</style>

@@ -1,0 +1,33 @@
+---
+interface Props {
+  color: string;
+  text: string;
+  accion?: () => void; // Renamed prop
+}
+
+const { color, text, accion } = Astro.props;
+---
+
+<button
+  style={`background-color: ${color}; border: 3px solid ${color}`}
+  class="custom-button"
+  onclick?={accion}
+>
+  {text}
+</button>
+
+<style>
+  .custom-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .custom-button:hover {
+    opacity: 0.8;
+  }
+</style>

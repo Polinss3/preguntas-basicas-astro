@@ -1,0 +1,41 @@
+---
+import turso from "../../lib/turso";
+import MainLayout from "../../layouts/MainLayout.astro";
+import ContenedorPreguntas from "../../components/ContenedorPreguntas.astro";
+import BotonesPreguntas from "../../components/BotonesPreguntas.astro";
+
+async function fetchData() {
+  try {
+    const result = await turso.execute("SELECT * FROM questionsTable");
+    console.log("Query result:", result);
+    return result.rows; // Asumiendo que el resultado tiene una propiedad `rows`
+  } catch (error) {
+    console.error("Error executing query:", error);
+    return [];
+  }
+}
+
+// Cargar los datos durante la construcción de la página
+const data = await fetchData();
+---
+
+<MainLayout title="Welcome to Astro.">
+  <main>
+    <div>
+      <h1>Data from questionsTable</h1>
+      <ul>
+        {data.length > 0 ? (
+          data.map((row) => (
+            <>
+              <li>{row.question}</li>
+              <li>{row.answer}</li>
+              <BotonesPreguntas label="Click me" />
+            </>
+          ))
+        ) : (
+          <li>No data available</li>
+        )}
+      </ul>
+    </div>
+  </main>
+</MainLayout>

@@ -207,7 +207,7 @@ INSERT INTO questionsTable (question, answer, hint1, category1, category2, categ
 
 
 -- Insertar preguntas sobre los rios
-INSERT INTO questionsTable (question, answer, hint1, category1, category2, category3) VALUES
+INSERT INTO questionsTable (question, answer, hint1, hint2, hint3, category1, category2, category3) VALUES
 ('¿Por qué ciudad pasa el río Sena?', 'París', 'Es conocida como la Ciudad de la Luz', 'Es famosa por la Torre Eiffel', 'Es una de las capitales más visitadas del mundo', 'Geografía', 'Europa', 'Ríos'),
 ('¿Qué río pasa por París?', 'Sena', 'Es uno de los ríos más importantes de Francia', 'Desemboca en el Canal de la Mancha', 'Es conocido por sus puentes históricos', 'Geografía', 'Europa', 'Ríos'),
 ('¿Por qué ciudad pasa el río Támesis?', 'Londres', 'Es la capital del Reino Unido', 'Es famosa por el Big Ben y el Palacio de Buckingham', 'Es una de las ciudades más grandes de Europa', 'Geografía', 'Europa', 'Ríos'),
@@ -369,7 +369,7 @@ INSERT INTO questionsTable (question, answer, hint1, category1, category2, categ
 
 
 -- Insertar preguntas sobre montañas, bosques, yacimientos y parques naturales
-INSERT INTO questionsTable (question, answer, hint1, category1, category2, category3) VALUES
+INSERT INTO questionsTable (question, answer, hint1, hint2, hint3, category1, category2, category3) VALUES
 ('¿En qué país se encuentra el Monte Everest?', 'Nepal', 'Es la montaña más alta del mundo', 'Su cima está a 8,848 metros sobre el nivel del mar', 'Está situada en la cordillera del Himalaya', 'Geografía', 'Asia', 'Montañas'),
 ('¿Cuál es la montaña más alta de África?', 'Kilimanjaro', 'Se encuentra en Tanzania', 'Es un volcán inactivo', 'Su cima está a 5,895 metros sobre el nivel del mar', 'Geografía', 'África', 'Montañas'),
 ('¿En qué país se encuentra el Monte Fuji?', 'Japón', 'Es un símbolo cultural de Japón', 'Es un volcán activo', 'Su cima está a 3,776 metros sobre el nivel del mar', 'Geografía', 'Asia', 'Montañas'),
@@ -631,7 +631,7 @@ INSERT INTO questionsTable (question, answer, hint1, category1, category2, categ
 
 
 -- Insertar preguntas sobre sitios y lugares históricos
-INSERT INTO questionsTable (question, answer, hint1, category1, category2, category3) VALUES
+INSERT INTO questionsTable (question, answer, hint1, hint2, hint3, category1, category2, category3) VALUES
 ('¿En qué país se encuentra la Torre Eiffel?', 'Francia', 'Es uno de los monumentos más icónicos del mundo', 'Está situada en París', 'Fue construida en 1889 para la Exposición Universal', 'Geografía', 'Europa', 'Monumentos'),
 ('¿Cuál es el famoso monumento de Washington D.C. que homenajea al primer presidente de Estados Unidos?', 'Monumento a Washington', 'Es un obelisco de mármol blanco', 'Fue completado en 1884', 'Es el monumento más alto de la ciudad', 'Geografía', 'América del Norte', 'Monumentos'),
 ('¿En qué país se encuentra el Coliseo?', 'Italia', 'Es un anfiteatro de la época romana', 'Está situado en Roma', 'Fue inaugurado en el año 80 d.C.', 'Geografía', 'Europa', 'Monumentos'),

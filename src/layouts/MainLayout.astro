@@ -20,7 +20,9 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <Header />
-  <slot />
+  <body>
+    <slot />
+  </body>
   <Footer />
 
   <style>
@@ -33,5 +35,44 @@ const { title } = Astro.props;
       margin-top: 100px; /* Altura del header */
       margin-bottom: 80px; /* Altura del footer */
     }
+    body.light-theme {
+      --background-color: #ffffff;
+      --text-color: #000000;
+      --nav-background-color: #a7a7a7;
+      --nav-text-color: #000000;
+    }
+
+    body.dark-theme {
+      --background-color: #121212;
+      --text-color: #ffffff;
+      --nav-background-color: #333333;
+      --nav-text-color: #ffffff;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      transition:
+        background-color 0.3s,
+        color 0.3s;
+    }
+
+    header {
+      background-color: var(--nav-background-color);
+      color: var(--nav-text-color);
+      transition:
+        background-color 0.3s,
+        color 0.3s;
+    }
+
+    header nav a {
+      color: var(--nav-text-color);
+    }
+
+    header nav a:hover {
+      color: var(--text-color);
+    }
+
+    /* Additional styles for other elements */
   </style>
 </html>

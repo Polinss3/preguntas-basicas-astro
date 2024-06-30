@@ -1,6 +1,7 @@
 ---
 import BotonesPreguntas from "./BotonesPreguntas.astro";
 import turso from "../lib/turso";
+import AstroToast from "astro-toast";
 
 // Función para obtener los datos de la base de datos
 async function fetchData() {
@@ -15,110 +16,6 @@ async function fetchData() {
 }
 
 const data = await fetchData();
-let currentQuestionIndex = 0;
-let attemptCount = 0;
-
-function handlePrevious() {
-  console.log("Previous question");
-  currentQuestionIndex = (currentQuestionIndex - 1 + data.length) % data.length;
-  attemptCount = 0; // Resetear los intentos al cambiar de pregunta
-  updateQuestion();
-}
-
-function handleNext() {
-  console.log("Next question");
-  currentQuestionIndex = (currentQuestionIndex + 1) % data.length;
-  attemptCount = 0; // Resetear los intentos al cambiar de pregunta
-  updateQuestion();
-}
-
-function updateQuestion() {
-  const questionElement = document.querySelector(".article-preguntas h2");
-  const answerElement = document.querySelector(".article-respuestas p");
-  const inputElement = document.querySelector(".input-respuesta");
-  const avisoElement = document.querySelector(".aviso");
-  const currentQuestion = data[currentQuestionIndex] || {};
-
-  if (questionElement) {
-    questionElement.textContent =
-      String(currentQuestion.question) || "Cargando pregunta...";
-  }
-
-  if (inputElement) {
-    inputElement.value = "";
-    inputElement.style.backgroundColor = "";
-    inputElement.disabled = false;
-  }
-
-  if (answerElement) {
-    answerElement.style.display = "none"; // Ocultar la respuesta inicialmente
-    answerElement.textContent =
-      String(currentQuestion.answer) || "Cargando respuesta...";
-    answerElement.style.backgroundColor = ""; // Restaurar el color de fondo
-  }
-
-  if (avisoElement) {
-    avisoElement.textContent = ""; // Limpiar el aviso
-  }
-
-  attemptCount = 0; // Resetear el contador de intentos
-}
-
-function handleVerify() {
-  const inputElement = document.querySelector(".input-respuesta");
-  const answerElement = document.querySelector(".article-respuestas p");
-  const avisoElement = document.querySelector(".aviso");
-  const currentQuestion = data[currentQuestionIndex] || {};
-
-  if (inputElement && answerElement && avisoElement) {
-    const userAnswer = inputElement.value.trim().toLowerCase();
-    const correctAnswer = (currentQuestion.answer || "").trim().toLowerCase();
-
-    attemptCount++;
-
-    if (userAnswer === correctAnswer) {
-      answerElement.style.backgroundColor = "green";
-      inputElement.disabled = true;
-      avisoElement.textContent = "¡Correcto!";
-    } else {
-      if (attemptCount >= 3) {
-        answerElement.style.display = "block"; // Mostrar la respuesta después de 3 intentos
-        answerElement.style.backgroundColor = "red";
-        inputElement.disabled = true;
-        avisoElement.textContent =
-          "Incorrecto. La respuesta correcta es: " + currentQuestion.answer;
-      } else {
-        avisoElement.textContent = `Incorrecto. Te quedan ${3 - attemptCount} intentos.`;
-      }
-    }
-
-    if (attemptCount >= 3 || userAnswer === correctAnswer) {
-      answerElement.style.display = "block"; // Mostrar la respuesta después de verificar
-    }
-  }
-}
-
-function handleKeyPress(event) {
-  if (event.key === "Enter") {
-    handleVerify();
-  }
-}
-
-declare global {
-  interface Window {
-    handlePrevious: () => void;
-    handleNext: () => void;
-    handleVerify: () => void;
-  }
-}
-
-if (typeof window !== "undefined") {
-  window.handlePrevious = handlePrevious;
-  window.handleNext = handleNext;
-  window.handleVerify = handleVerify;
-
-  document.addEventListener("keydown", handleKeyPress);
-}
 ---
 
 <section class="section-preguntas" data-questions={`${JSON.stringify(data)}`}>
@@ -139,28 +36,24 @@ if (typeof window !== "undefined") {
     <div class="contenedor-botones-preguntas">
       <button
         class="custom-button"
-        onclick="window.handlePrevious()"
-        style="background-color: #c2c2c2; border: 3px solid #c2c2c2"
-        >Anterior</button
+        id="previousButton"
+        onclick="window.handlePrevious()">Anterior</button
       >
       <button
         class="custom-button"
-        onclick="window.handleHint()"
-        style="background-color: #ff000099; border: 3px solid #ff000099"
-        >Pista</button
+        id="hintButton"
+        onclick="window.handleHint()">Pista</button
       >
 
       <button
         class="custom-button"
-        onclick="window.handleVerify()"
-        style="background-color: #00ff0099; border: 3px solid #00ff0099"
-        >Verificar</button
+        id="verifyButton"
+        onclick="window.handleVerify()">Verificar</button
       >
       <button
         class="custom-button"
-        onclick="window.handleNext()"
-        style="background-color: #c2c2c2; border: 3px solid #c2c2c2"
-        >Saltar</button
+        id="nextButton"
+        onclick="window.handleNext()">Siguiente</button
       >
     </div>
   </article>
@@ -184,19 +77,33 @@ if (typeof window !== "undefined") {
 </section>
 
 <script>
+  import { Notyf } from "notyf";
+  import "notyf/notyf.min.css";
+
   document.addEventListener("DOMContentLoaded", () => {
     const sectionPreguntas = document.querySelector(".section-preguntas");
     const dataQuestionsAttr = sectionPreguntas?.getAttribute("data-questions");
+    let targerEnter = "verificar";
+    const notyf = new Notyf({
+      types: [
+        {
+          type: "error 1",
+          background: "#E6B41A",
+          icon: false,
+        },
+        {
+          type: "error 2",
+          background: "#FF9247",
+          icon: false,
+        },
+      ],
+    });
 
     if (dataQuestionsAttr) {
       const data = JSON.parse(dataQuestionsAttr);
-      console.log("Data:", data);
-
       const idsList = data.map((item: { id: number }) => item.id);
-      console.log("IDs list:", idsList);
-
       // Creando la lista de ids pasados
-      const idsPassed = [];
+      const idsPassed: number[] = [];
 
       // Inicializar currentQuestionIndex con un índice aleatorio
       let currentQuestionIndex = Math.floor(Math.random() * data.length);
@@ -226,15 +133,33 @@ if (typeof window !== "undefined") {
         idsPassed.push(currentQuestionIndex); // Agregar el nuevo índice a la lista de ids pasados
         attemptCount = 0; // Resetear los intentos al cambiar de pregunta
         shownHints = []; // Resetear las pistas mostradas
-        clearHints(); // Limpiar la lista de pistas
+        const btnVerificar = document.querySelector(
+          "#verifyButton"
+        ) as HTMLInputElement;
+        btnVerificar.style.display = "block";
+        const btnPista = document.querySelector(
+          "#hintButton"
+        ) as HTMLInputElement;
+        btnPista.style.display = "block";
+        targerEnter = "verificar";
+        clearHints();
         updateQuestion();
+        const inputElement = document.querySelector(
+          ".input-respuesta"
+        ) as HTMLInputElement;
+        inputElement.focus();
       }
 
       function updateQuestion() {
-        const questionElement = document.querySelector(".article-preguntas h2");
-        const answerElement = document.querySelector(".article-respuestas p");
-        const inputElement = document.querySelector(".input-respuesta");
-        const avisoElement = document.querySelector(".aviso");
+        const questionElement = document.querySelector(
+          ".article-preguntas h2"
+        ) as HTMLInputElement;
+        const answerElement = document.querySelector(
+          ".article-respuestas p"
+        ) as HTMLInputElement;
+        const inputElement = document.querySelector(
+          ".input-respuesta"
+        ) as HTMLInputElement;
         const currentQuestion = data[currentQuestionIndex] || {};
 
         if (questionElement) {
@@ -255,20 +180,19 @@ if (typeof window !== "undefined") {
           answerElement.style.backgroundColor = ""; // Restaurar el color de fondo
         }
 
-        if (avisoElement) {
-          avisoElement.textContent = ""; // Limpiar el aviso
-        }
-
         attemptCount = 0; // Resetear el contador de intentos
       }
 
       function handleVerify() {
-        const inputElement = document.querySelector(".input-respuesta");
-        const answerElement = document.querySelector(".article-respuestas p");
-        const avisoElement = document.querySelector(".aviso");
+        const inputElement = document.querySelector(
+          ".input-respuesta"
+        ) as HTMLInputElement;
+        const answerElement = document.querySelector(
+          ".article-respuestas p"
+        ) as HTMLInputElement;
         const currentQuestion = data[currentQuestionIndex] || {};
 
-        if (inputElement && answerElement && avisoElement) {
+        if (inputElement && answerElement) {
           const userAnswer = inputElement.value.trim().toLowerCase();
           const correctAnswer = (currentQuestion.answer || "")
             .trim()
@@ -277,19 +201,52 @@ if (typeof window !== "undefined") {
           attemptCount++;
 
           if (userAnswer === correctAnswer) {
-            answerElement.className += "verde";
+            answerElement.className = "contenedor-respuesta verde";
             inputElement.disabled = true;
-            avisoElement.textContent = "¡Correcto!";
+            notyf.success("¡Correcto!");
+            targerEnter = "siguiente";
+
+            const btnVerificar = document.querySelector(
+              "#verifyButton"
+            ) as HTMLInputElement;
+            btnVerificar.style.display = "none";
+
+            const btnPista = document.querySelector(
+              "#hintButton"
+            ) as HTMLInputElement;
+            btnPista.style.display = "none";
           } else {
             if (attemptCount >= 3) {
+              targerEnter = "siguiente";
+              const btnVerificar = document.querySelector(
+                "#verifyButton"
+              ) as HTMLInputElement;
+              btnVerificar.style.display = "none";
+
+              const btnPista = document.querySelector(
+                "#hintButton"
+              ) as HTMLInputElement;
+              btnPista.style.display = "none";
+
               answerElement.style.display = "block"; // Mostrar la respuesta después de 3 intentos
-              answerElement.className += "rojo";
+              answerElement.className = "contenedor-respuesta rojo";
               inputElement.disabled = true;
-              avisoElement.textContent =
-                "Incorrecto. La respuesta correcta es: " +
-                currentQuestion.answer;
+              notyf.error(
+                "Incorrecto. Se han agotado los intentos. Presiona 'Siguiente' para continuar."
+              );
             } else {
-              avisoElement.textContent = `Incorrecto. Te quedan ${3 - attemptCount} intentos.`;
+              if (attemptCount === 1) {
+                notyf.open({
+                  type: "error 1",
+                  message:
+                    "Incorrecto. Intenta de nuevo. Te quedan 2 intentos.",
+                });
+              } else if (attemptCount === 2) {
+                notyf.open({
+                  type: "error 2",
+                  message: "Incorrecto. Intenta de nuevo. Te queda 1 intento.",
+                });
+              }
             }
           }
 
@@ -299,9 +256,11 @@ if (typeof window !== "undefined") {
         }
       }
 
-      function handleKeyPress(event) {
-        if (event.key === "Enter") {
+      function handleKeyPress(event: any) {
+        if (event.key === "Enter" && targerEnter === "verificar") {
           handleVerify();
+        } else if (event.key === "Enter" && targerEnter === "siguiente") {
+          handleNext();
         }
       }
 
@@ -322,14 +281,20 @@ if (typeof window !== "undefined") {
           const hintList = document.getElementById("hintList");
           const hintItem = document.createElement("li");
           hintItem.textContent = nextHint;
-          hintList.appendChild(hintItem);
+          hintList?.appendChild(hintItem);
 
-          document.getElementById("noMoreHints").style.display = "none";
+          (
+            document.getElementById("noMoreHints") as HTMLInputElement
+          ).style.display = "none";
 
-          const modal = document.getElementById("hintModal");
+          const modal = document.getElementById(
+            "hintModal"
+          ) as HTMLInputElement;
           modal.style.display = "block";
 
-          const span = document.getElementsByClassName("close")[0];
+          const span = document.getElementsByClassName(
+            "close"
+          )[0] as HTMLInputElement;
           span.onclick = function () {
             modal.style.display = "none";
           };
@@ -340,14 +305,38 @@ if (typeof window !== "undefined") {
             }
           };
         } else {
-          document.getElementById("noMoreHints").style.display = "block";
+          (
+            document.getElementById("noMoreHints") as HTMLInputElement
+          ).style.display = "block";
+
+          const modal = document.getElementById(
+            "hintModal"
+          ) as HTMLInputElement;
+          modal.style.display = "block";
+
+          const span = document.getElementsByClassName(
+            "close"
+          )[0] as HTMLInputElement;
+          span.onclick = function () {
+            modal.style.display = "none";
+          };
+
+          window.onclick = function (event) {
+            if (event.target == modal) {
+              modal.style.display = "none";
+            }
+          };
         }
       }
 
       function clearHints() {
-        const hintList = document.getElementById("hintList");
+        const hintList = document.getElementById(
+          "hintList"
+        ) as HTMLInputElement;
         hintList.innerHTML = "";
-        document.getElementById("noMoreHints").style.display = "none";
+        (
+          document.getElementById("noMoreHints") as HTMLInputElement
+        ).style.display = "none";
       }
 
       window.handlePrevious = handlePrevious;
@@ -404,6 +393,7 @@ if (typeof window !== "undefined") {
   .article-preguntas h2 {
     font-size: 3em;
     color: #000;
+    text-align: center;
   }
 
   .article-respuesta-escrita {
@@ -463,17 +453,159 @@ if (typeof window !== "undefined") {
   }
 
   .custom-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    font-size: 1.5em;
+    display: inline-block;
+    transition: all 0.2s ease-in;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    color: #090909;
+    padding: 0.7em 1.7em;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 18px;
+    border-radius: 0.5em;
+    background: #e8e8e8;
+    border: 1px solid #e8e8e8;
+    box-shadow:
+      6px 6px 12px #c5c5c5,
+      -6px -6px 12px #ffffff;
   }
 
-  .custom-button:hover {
-    opacity: 0.8;
+  .custom-button:active {
+    color: #666;
+    box-shadow:
+      inset 4px 4px 12px #c5c5c5,
+      inset -4px -4px 12px #ffffff;
+  }
+
+  .custom-button:before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.25);
+    top: 100%;
+    width: 140%;
+    height: 180%;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+
+  #verifyButton:after {
+    content: "";
+    position: absolute;
+    left: 55%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.45);
+    top: 180%;
+    width: 160%;
+    height: 190%;
+    background-color: #28a745;
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+  #hintButton:after {
+    content: "";
+    position: absolute;
+    left: 55%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.45);
+    top: 180%;
+    width: 160%;
+    height: 190%;
+    background-color: #ffc107;
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+  #previousButton:after {
+    content: "";
+    position: absolute;
+    left: 55%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.45);
+    top: 180%;
+    width: 160%;
+    height: 190%;
+    background-color: #808080;
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+  #nextButton:after {
+    content: "";
+    position: absolute;
+    left: 55%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.45);
+    top: 180%;
+    width: 160%;
+    height: 190%;
+    background-color: #007bff;
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+
+  #verifyButton:hover {
+    color: #ffffff;
+    border: 1px solid #28a745;
+  }
+  #hintButton:hover {
+    color: #ffffff;
+    border: 1px solid #ffc107;
+  }
+  #previousButton:hover {
+    color: #ffffff;
+    border: 1px solid #808080;
+  }
+  #nextButton:hover {
+    color: #ffffff;
+    border: 1px solid #007bff;
+  }
+
+  #verifyButton:hover:before {
+    top: -35%;
+    background-color: #28a745;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+  #hintButton:hover:before {
+    top: -35%;
+    background-color: #ffc107;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+  #previousButton:hover:before {
+    top: -35%;
+    background-color: #808080;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+  #nextButton:hover:before {
+    top: -35%;
+    background-color: #007bff;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+
+  #verifyButton:hover:after {
+    top: -45%;
+    background-color: #28a745;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+  #hintButton:hover:after {
+    top: -45%;
+    background-color: #ffc107;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+  #previousButton:hover:after {
+    top: -45%;
+    background-color: #808080;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+  #nextButton:hover:after {
+    top: -45%;
+    background-color: #007bff;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
   }
 
   .article-respuestas {
@@ -488,14 +620,23 @@ if (typeof window !== "undefined") {
     padding: 10px;
     border-radius: 7px;
   }
-  .article-respuestas p.verde {
-    background-color: #00ff0099;
-    border: 3px solid #00ff0099;
+
+  .contenedor-respuesta.verde {
+    background: rgba(9, 255, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(9, 255, 0, 1);
   }
 
-  .article-respuestas p.rojo {
-    background-color: #ff000099;
-    border: 3px solid #ff000099;
+  .contenedor-respuesta.rojo {
+    background: rgba(255, 0, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 0, 0, 1);
   }
 
   /* Estilos para la ventana modal */

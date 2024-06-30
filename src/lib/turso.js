@@ -3,11 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// const url = process.env.TURSO_DATABASE_URL;
-// const authToken = process.env.TURSO_AUTH_TOKEN;
-
-const url = "libsql://preguntas-basicas-pablobrasero.turso.io";
-const authToken = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3MTkxNjk4MjAsImlkIjoiZjg3MjBkZWUtYWMwNy00NjhlLTgyMzUtMWYyMzJkODk0MGYwIn0.BSdjCCP86QwCK7gW0kFj2lYiLDQEkBPmDpAVICrRbZzkx1QusrKS1DJ0G-uNi3iFrkzmG1YWId28hmQ8-4VrBg";
+const url = process.env.TURSO_DATABASE_URL;
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
 console.log("Database URL:", url);
 console.log("Auth Token:", authToken);

@@ -80,6 +80,15 @@ const data = await fetchData();
   import { Notyf } from "notyf";
   import "notyf/notyf.min.css";
 
+  declare global {
+    interface Window {
+      handlePrevious: () => void;
+      handleNext: () => void;
+      handleVerify: () => void;
+      handleHint: () => void;
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     const sectionPreguntas = document.querySelector(".section-preguntas");
     const dataQuestionsAttr = sectionPreguntas?.getAttribute("data-questions");
@@ -338,6 +347,8 @@ const data = await fetchData();
           document.getElementById("noMoreHints") as HTMLInputElement
         ).style.display = "none";
       }
+
+      
 
       window.handlePrevious = handlePrevious;
       window.handleNext = handleNext;

@@ -1,51 +1,73 @@
-  <header>
-    <img
-      class="logo-header"
-      src="https://kinsta.com/wp-content/uploads/2023/05/introduction-to-astro-1024x512.jpg"
-      alt="Logo de la app"
-    />
-    <nav>
-      <a href="#">Home</a>
-      <a href="#">Start Learning</a>
-      <a href="#">About</a>
-      <a href="#">Contact</a>
-    </nav>
-  </header>
+<header>
+  <img
+    class="logo-header"
+    src="https://kinsta.com/wp-content/uploads/2023/05/introduction-to-astro-1024x512.jpg"
+    alt="Logo de la app"
+  />
+  <svg
+    class="boton-desplegable"
+    height="48px"
+    width="48px"
+    viewBox="0 -960 960 960"
+    fill="#e8eaed"
+    ><path
+      d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"
+    ></path></svg
+  >
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Start Learning</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
 
+<style>
+  header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: #a7a7a7;
+    color: white;
+    height: 100px;
+    z-index: 1000;
+  }
+  .logo-header {
+    height: 80px;
+  }
+  
+  .boton-desplegable {
+      display: none;
+    }
+  header nav {
+    display: flex;
+    justify-content: space-between;
+    width: 35%;
+    margin-right: 50px;
+  }
 
-  <style>
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
-      background-color: #a7a7a7;
-      color: white;
-      height: 100px;
-      z-index: 1000;
-    }
-    .logo-header {
-      height: 80px;
-    }
+  header nav a {
+    color: #000000;
+    text-decoration: none;
+    font-size: 2rem;
+    transition: color 0.1s ease-in-out; /* Transición de color */
+  }
+
+  header nav a:hover {
+    color: #ffffff;
+  }
+
+  @media screen and (max-width: 768px){
     header nav {
-      display: flex;
-        justify-content: space-between;
-      width: 35%;
-      margin-right: 50px;
+      display: none;
     }
-
-    header nav a {
-      color: #000000;
-      text-decoration: none;
-      font-size: 2rem;
-      transition: color 0.1s ease-in-out; /* Transición de color */
+    .boton-desplegable {
+      display: block;
     }
-
-    header nav a:hover {
-      color: #ffffff;
-    }
-  </style>
-</html>
+    
+  }
+</style>

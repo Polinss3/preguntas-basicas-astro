@@ -346,8 +346,6 @@ const data = await fetchData();
         ).style.display = "none";
       }
 
-      
-
       window.handlePrevious = handlePrevious;
       window.handleNext = handleNext;
       window.handleVerify = handleVerify;
@@ -387,6 +385,7 @@ const data = await fetchData();
   .article-titulo h1 {
     font-size: 4em;
     color: #000;
+    text-align: center;
   }
   .article-preguntas {
     display: flex;
@@ -397,8 +396,8 @@ const data = await fetchData();
     flex-wrap: nowrap;
     align-content: center;
     justify-content: center;
+    padding: 0 20px;
   }
-
   .article-preguntas h2 {
     font-size: 3em;
     color: #000;
@@ -683,5 +682,75 @@ const data = await fetchData();
     color: black;
     text-decoration: none;
     cursor: pointer;
+  }
+
+  @media screen and (max-width: 765px) {
+    .article-titulo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 15%;
+      flex-wrap: nowrap;
+      align-content: center;
+      justify-content: center;
+    }
+    .article-titulo h1 {
+      font-size: 2.5em;
+      color: #000;
+      text-align: center;
+    }
+    .article-preguntas {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 25%;
+      flex-wrap: nowrap;
+      align-content: center;
+      justify-content: center;
+      padding: 0 10px;
+    }
+    .article-preguntas h2 {
+      font-size: 1.7em;
+      color: #000;
+      text-align: center;
+    }
+    .article-botones {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      height: 15%;
+      flex-wrap: nowrap;
+      align-content: center;
+      justify-content: center;
+    }
+    .contenedor-botones-preguntas {
+      width: 90%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      row-gap: 30px;
+      column-gap: 20px;
+    }
+    #previousButton  {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    #hintButton {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    #verifyButton {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    #nextButton {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
   }
 </style>

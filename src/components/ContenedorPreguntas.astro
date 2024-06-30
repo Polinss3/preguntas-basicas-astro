@@ -16,71 +16,353 @@ async function fetchData() {
 
 const data = await fetchData();
 let currentQuestionIndex = 0;
+let attemptCount = 0;
 
-// Funciones para navegar entre preguntas
-const handlePrevious = async () => {
+function handlePrevious() {
   console.log("Previous question");
   currentQuestionIndex = (currentQuestionIndex - 1 + data.length) % data.length;
+  attemptCount = 0; // Resetear los intentos al cambiar de pregunta
   updateQuestion();
 }
 
 function handleNext() {
   console.log("Next question");
   currentQuestionIndex = (currentQuestionIndex + 1) % data.length;
+  attemptCount = 0; // Resetear los intentos al cambiar de pregunta
   updateQuestion();
 }
 
 function updateQuestion() {
-  const questionElement = document.querySelector('.article-preguntas h2');
-  const answerElement = document.querySelector('.article-respuestas p');
+  const questionElement = document.querySelector(".article-preguntas h2");
+  const answerElement = document.querySelector(".article-respuestas p");
+  const inputElement = document.querySelector(".input-respuesta");
+  const avisoElement = document.querySelector(".aviso");
   const currentQuestion = data[currentQuestionIndex] || {};
 
   if (questionElement) {
-    questionElement.textContent = String(currentQuestion.question) || "Cargando pregunta...";
+    questionElement.textContent =
+      String(currentQuestion.question) || "Cargando pregunta...";
+  }
+
+  if (inputElement) {
+    inputElement.value = "";
+    inputElement.style.backgroundColor = "";
+    inputElement.disabled = false;
   }
 
   if (answerElement) {
-    answerElement.textContent = String(currentQuestion.answer) || "Cargando respuesta...";
+    answerElement.style.display = "none"; // Ocultar la respuesta inicialmente
+    answerElement.textContent =
+      String(currentQuestion.answer) || "Cargando respuesta...";
+    answerElement.style.backgroundColor = ""; // Restaurar el color de fondo
+  }
+
+  if (avisoElement) {
+    avisoElement.textContent = ""; // Limpiar el aviso
+  }
+
+  attemptCount = 0; // Resetear el contador de intentos
+}
+
+function handleVerify() {
+  const inputElement = document.querySelector(".input-respuesta");
+  const answerElement = document.querySelector(".article-respuestas p");
+  const avisoElement = document.querySelector(".aviso");
+  const currentQuestion = data[currentQuestionIndex] || {};
+
+  if (inputElement && answerElement && avisoElement) {
+    const userAnswer = inputElement.value.trim().toLowerCase();
+    const correctAnswer = (currentQuestion.answer || "").trim().toLowerCase();
+
+    attemptCount++;
+
+    if (userAnswer === correctAnswer) {
+      answerElement.style.backgroundColor = "green";
+      inputElement.disabled = true;
+      avisoElement.textContent = "¡Correcto!";
+    } else {
+      if (attemptCount >= 3) {
+        answerElement.style.display = "block"; // Mostrar la respuesta después de 3 intentos
+        answerElement.style.backgroundColor = "red";
+        inputElement.disabled = true;
+        avisoElement.textContent =
+          "Incorrecto. La respuesta correcta es: " + currentQuestion.answer;
+      } else {
+        avisoElement.textContent = `Incorrecto. Te quedan ${3 - attemptCount} intentos.`;
+      }
+    }
+
+    if (attemptCount >= 3 || userAnswer === correctAnswer) {
+      answerElement.style.display = "block"; // Mostrar la respuesta después de verificar
+    }
   }
 }
 
-// Inicializar la primera pregunta
-if (typeof window !== 'undefined') {
+function handleKeyPress(event) {
+  if (event.key === "Enter") {
+    handleVerify();
+  }
+}
+
+declare global {
+  interface Window {
+    handlePrevious: () => void;
+    handleNext: () => void;
+    handleVerify: () => void;
+  }
+}
+
+if (typeof window !== "undefined") {
   window.handlePrevious = handlePrevious;
   window.handleNext = handleNext;
-  
-  window.addEventListener('load', () => {
-    updateQuestion();
-  });
+  window.handleVerify = handleVerify;
+
+  document.addEventListener("keydown", handleKeyPress);
 }
 ---
 
-<section class="section-preguntas">
+<section class="section-preguntas" data-questions={`${JSON.stringify(data)}`}>
   <article class="article-titulo">
     <h1>Quiz preguntas básicas</h1>
   </article>
   <article class="article-preguntas">
     <h2>Cargando pregunta...</h2>
   </article>
+  <article class="article-respuesta-escrita">
+    <input
+      class="input-respuesta"
+      type="text"
+      placeholder="Escribe tu respuesta aquí"
+    />
+  </article>
   <article class="article-botones">
     <div class="contenedor-botones-preguntas">
-        <BotonesPreguntas color="#c2c2c2" text="Anterior" onButtonClick={handlePrevious} />
-      <BotonesPreguntas color="#ff000099" text="Pista" />
-      <BotonesPreguntas color="#00ff0099" text="Verificar" />
-      <BotonesPreguntas color="#c2c2c2" text="Saltar" onButtonClick={handleNext} />
+      <button
+        class="custom-button"
+        onclick="window.handlePrevious()"
+        style="background-color: #c2c2c2; border: 3px solid #c2c2c2"
+        >Anterior</button
+      >
+      <button
+        class="custom-button"
+        onclick="window.handleHint()"
+        style="background-color: #ff000099; border: 3px solid #ff000099"
+        >Pista</button
+      >
+
+      <button
+        class="custom-button"
+        onclick="window.handleVerify()"
+        style="background-color: #00ff0099; border: 3px solid #00ff0099"
+        >Verificar</button
+      >
+      <button
+        class="custom-button"
+        onclick="window.handleNext()"
+        style="background-color: #c2c2c2; border: 3px solid #c2c2c2"
+        >Saltar</button
+      >
     </div>
   </article>
   <article class="article-respuestas">
-    <p>Cargando respuesta...</p>
+    <p style="display: none;">Cargando respuesta...</p>
+    <!-- Respuesta oculta inicialmente -->
+    <div id="hintModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="hintsContainer">
+          <ul id="hintList"></ul>
+          <p id="noMoreHints" style="display: none; color: red;">
+            No hay más pistas disponibles.
+          </p>
+        </div>
+      </div>
+    </div>
   </article>
+  <article class="aviso"></article>
+  <!-- Aviso para mostrar mensajes de intentos -->
 </section>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const sectionPreguntas = document.querySelector(".section-preguntas");
+    const dataQuestionsAttr = sectionPreguntas?.getAttribute("data-questions");
 
+    if (dataQuestionsAttr) {
+      const data = JSON.parse(dataQuestionsAttr);
+      console.log("Data:", data);
 
+      const idsList = data.map((item: { id: number }) => item.id);
+      console.log("IDs list:", idsList);
 
+      // Creando la lista de ids pasados
+      const idsPassed = [];
 
+      // Inicializar currentQuestionIndex con un índice aleatorio
+      let currentQuestionIndex = Math.floor(Math.random() * data.length);
+      idsPassed.push(currentQuestionIndex); // Agregar el índice inicial a la lista de ids pasados
+      let attemptCount = 0;
 
+      // Variable para almacenar las pistas mostradas
+      let shownHints = [];
 
+      function handlePrevious() {
+        if (idsPassed.length > 1) {
+          console.log("Previous question");
+          idsPassed.pop(); // Remover el último id (actual)
+          currentQuestionIndex = idsPassed[idsPassed.length - 1]; // Usar el penúltimo id
+          attemptCount = 0; // Resetear los intentos al cambiar de pregunta
+          shownHints = []; // Resetear las pistas mostradas
+          clearHints(); // Limpiar la lista de pistas
+          updateQuestion();
+        } else {
+          console.log("No previous questions available.");
+        }
+      }
+
+      function handleNext() {
+        console.log("Next question");
+        currentQuestionIndex = Math.floor(Math.random() * data.length);
+        idsPassed.push(currentQuestionIndex); // Agregar el nuevo índice a la lista de ids pasados
+        attemptCount = 0; // Resetear los intentos al cambiar de pregunta
+        shownHints = []; // Resetear las pistas mostradas
+        clearHints(); // Limpiar la lista de pistas
+        updateQuestion();
+      }
+
+      function updateQuestion() {
+        const questionElement = document.querySelector(".article-preguntas h2");
+        const answerElement = document.querySelector(".article-respuestas p");
+        const inputElement = document.querySelector(".input-respuesta");
+        const avisoElement = document.querySelector(".aviso");
+        const currentQuestion = data[currentQuestionIndex] || {};
+
+        if (questionElement) {
+          questionElement.textContent =
+            String(currentQuestion.question) || "Cargando pregunta...";
+        }
+
+        if (inputElement) {
+          inputElement.value = "";
+          inputElement.style.backgroundColor = "";
+          inputElement.disabled = false;
+        }
+
+        if (answerElement) {
+          answerElement.style.display = "none"; // Ocultar la respuesta inicialmente
+          answerElement.textContent =
+            String(currentQuestion.answer) || "Cargando respuesta...";
+          answerElement.style.backgroundColor = ""; // Restaurar el color de fondo
+        }
+
+        if (avisoElement) {
+          avisoElement.textContent = ""; // Limpiar el aviso
+        }
+
+        attemptCount = 0; // Resetear el contador de intentos
+      }
+
+      function handleVerify() {
+        const inputElement = document.querySelector(".input-respuesta");
+        const answerElement = document.querySelector(".article-respuestas p");
+        const avisoElement = document.querySelector(".aviso");
+        const currentQuestion = data[currentQuestionIndex] || {};
+
+        if (inputElement && answerElement && avisoElement) {
+          const userAnswer = inputElement.value.trim().toLowerCase();
+          const correctAnswer = (currentQuestion.answer || "")
+            .trim()
+            .toLowerCase();
+
+          attemptCount++;
+
+          if (userAnswer === correctAnswer) {
+            answerElement.className += "verde";
+            inputElement.disabled = true;
+            avisoElement.textContent = "¡Correcto!";
+          } else {
+            if (attemptCount >= 3) {
+              answerElement.style.display = "block"; // Mostrar la respuesta después de 3 intentos
+              answerElement.className += "rojo";
+              inputElement.disabled = true;
+              avisoElement.textContent =
+                "Incorrecto. La respuesta correcta es: " +
+                currentQuestion.answer;
+            } else {
+              avisoElement.textContent = `Incorrecto. Te quedan ${3 - attemptCount} intentos.`;
+            }
+          }
+
+          if (attemptCount >= 3 || userAnswer === correctAnswer) {
+            answerElement.style.display = "block"; // Mostrar la respuesta después de verificar
+          }
+        }
+      }
+
+      function handleKeyPress(event) {
+        if (event.key === "Enter") {
+          handleVerify();
+        }
+      }
+
+      function handleHint() {
+        const currentQuestion = data[currentQuestionIndex] || {};
+        const hints = [
+          currentQuestion.hint1,
+          currentQuestion.hint2,
+          currentQuestion.hint3,
+          currentQuestion.hint4,
+          currentQuestion.hint5,
+        ].filter((hint) => hint !== null);
+
+        if (shownHints.length < hints.length) {
+          const nextHint = hints[shownHints.length];
+          shownHints.push(nextHint);
+
+          const hintList = document.getElementById("hintList");
+          const hintItem = document.createElement("li");
+          hintItem.textContent = nextHint;
+          hintList.appendChild(hintItem);
+
+          document.getElementById("noMoreHints").style.display = "none";
+
+          const modal = document.getElementById("hintModal");
+          modal.style.display = "block";
+
+          const span = document.getElementsByClassName("close")[0];
+          span.onclick = function () {
+            modal.style.display = "none";
+          };
+
+          window.onclick = function (event) {
+            if (event.target == modal) {
+              modal.style.display = "none";
+            }
+          };
+        } else {
+          document.getElementById("noMoreHints").style.display = "block";
+        }
+      }
+
+      function clearHints() {
+        const hintList = document.getElementById("hintList");
+        hintList.innerHTML = "";
+        document.getElementById("noMoreHints").style.display = "none";
+      }
+
+      window.handlePrevious = handlePrevious;
+      window.handleNext = handleNext;
+      window.handleVerify = handleVerify;
+      window.handleHint = handleHint;
+
+      document.addEventListener("keydown", handleKeyPress);
+
+      updateQuestion();
+    } else {
+      console.error("Attribute 'data-questions' is missing or null.");
+    }
+  });
+</script>
 
 <style>
   .section-preguntas {
@@ -95,22 +377,20 @@ if (typeof window !== 'undefined') {
     justify-content: flex-start;
   }
   .article-titulo {
-    background-color: #f4bfbf;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    height: 20%;
+    height: 15%;
     flex-wrap: nowrap;
     align-content: center;
     justify-content: center;
   }
   .article-titulo h1 {
-    font-size: 5em;
+    font-size: 4em;
     color: #000;
   }
   .article-preguntas {
-    background-color: #f9a4a4;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -125,8 +405,43 @@ if (typeof window !== 'undefined') {
     font-size: 3em;
     color: #000;
   }
+
+  .article-respuesta-escrita {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 15%;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+  }
+
+  .input-respuesta {
+    width: 90%;
+    max-width: 390px;
+    background-color: #f5f5f5;
+    color: #242424;
+    padding: 0.15rem 0.5rem;
+    min-height: 40px;
+    border-radius: 4px;
+    outline: none;
+    border: none;
+    line-height: 1.15;
+    box-shadow: 0px 10px 20px -18px;
+    outline: 1px solid lightgrey;
+  }
+
+  .input-respuesta:focus {
+    border-bottom: 2px solid #5b5fc7;
+    border-radius: 4px 4px 2px 2px;
+  }
+
+  .input-respuesta:hover {
+    outline: 1px solid grey;
+  }
+
   .article-botones {
-    background-color: #f7a061;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -147,13 +462,76 @@ if (typeof window !== 'undefined') {
     justify-content: space-evenly;
   }
 
+  .custom-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .custom-button:hover {
+    opacity: 0.8;
+  }
+
   .article-respuestas {
-    background-color: #f9a4a4;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    height: 40%;
+    height: 30%;
     padding-top: 10px;
+  }
+  .article-respuestas p {
+    padding: 10px;
+    border-radius: 7px;
+  }
+  .article-respuestas p.verde {
+    background-color: #00ff0099;
+    border: 3px solid #00ff0099;
+  }
+
+  .article-respuestas p.rojo {
+    background-color: #ff000099;
+    border: 3px solid #ff000099;
+  }
+
+  /* Estilos para la ventana modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
   }
 </style>

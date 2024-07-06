@@ -1,0 +1,88 @@
+---
+import OpcionTest from "./OpcionTest.astro";
+import turso from "../../lib/turso";
+
+// Función para obtener los datos de la base de datos
+async function fetchData() {
+  try {
+    const result = await turso.execute("SELECT * FROM questionsTable");
+    // console.log("Query result:", result);
+    return result.rows; // Asumiendo que el resultado tiene una propiedad `rows`
+  } catch (error) {
+    console.error("Error executing query:", error);
+    return [];
+  }
+}
+
+// Función para obtener un número entero aleatorio en un rango dado
+function getRandomInt(min:number, max:number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Función para ordenar aleatoriamente un array
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// Ejecutar la función y almacenar los datos en una variable
+const data = await fetchData();
+// console.log("Data:", data);
+
+// Filtrar los datos que tienen category3 igual en las primeras tres entradas
+const filteredData = data.filter((item) => item.category3 === "Capitales");
+
+// Seleccionar una pregunta aleatoria
+const randomQuestionIndex = getRandomInt(0, filteredData.length - 1);
+const preguntaAHacer = filteredData[randomQuestionIndex].question;
+const respuestaCorrecta = filteredData[randomQuestionIndex].answer;
+
+// Crear una lista de respuestas con la respuesta correcta y tres opciones más
+let opciones = [respuestaCorrecta];
+
+// Añadir tres respuestas aleatorias de cualquier parte de la tabla
+while (opciones.length < 4) {
+  const randomIndex = getRandomInt(0, data.length - 1);
+  const randomAnswer = data[randomIndex].answer;
+
+  // Asegurarse de que la respuesta aleatoria no sea igual a la respuesta correcta y no esté ya en la lista de opciones
+  if (!opciones.includes(randomAnswer)) {
+    opciones.push(randomAnswer);
+  }
+}
+
+// Mezclar las respuestas
+opciones = shuffleArray(opciones);
+
+// console.log("preguntaAHacer:", preguntaAHacer);
+// console.log("respuestaCorrecta:", respuestaCorrecta);
+// console.log("opciones aleatorias:", opciones); 
+---
+
+<section class="seccion-tipo-test">
+  <article class="article-titulo-test">
+    <h1>Test preguntas básicas</h1>
+  </article>
+  <article class="article-preguntas-test">
+    <h2>{preguntaAHacer}</h2>
+  </article>
+  <article class="article-respuesta-escrita-test">
+    <OpcionTest id="1" text={String(opciones[0])} />
+    <OpcionTest id="2" text={String(opciones[1])} />
+    <OpcionTest id="3" text={String(opciones[2])} />
+    <OpcionTest id="4" text={String(opciones[3])} />
+  </article>
+</section>
+
+<script is:inline>
+  // Will be rendered into the HTML exactly as written!
+  // Local imports are not resolved and will not work.
+  // If in a component, repeats each time the component is used.
+
+  console.log("Hello from the inline script!");
+</script>

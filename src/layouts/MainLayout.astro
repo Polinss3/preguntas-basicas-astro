@@ -73,6 +73,18 @@ const { title } = Astro.props;
       color: var(--text-color);
     }
 
+    @media screen and (max-width: 765px) {
+      body {
+        font-family: "Lato", sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px); /* Altura del header y footer */
+        margin: 0;
+        margin-top: 70px; /* Altura del header */
+        margin-bottom: 50px; /* Altura del footer */
+      }
+    }
+
     /* Additional styles for other elements */
   </style>
 </html>

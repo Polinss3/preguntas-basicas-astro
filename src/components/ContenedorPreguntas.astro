@@ -288,6 +288,7 @@ const data = await fetchData();
           const hintList = document.getElementById("hintList");
           const hintItem = document.createElement("li");
           hintItem.textContent = nextHint;
+          hintItem.classList.add("hintItem"); // Añadir la clase hintItem
           hintList?.appendChild(hintItem);
 
           (
@@ -684,6 +685,17 @@ const data = await fetchData();
     cursor: pointer;
   }
 
+  #hintList {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .hintItem {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+  }
+
   @media screen and (max-width: 765px) {
     .article-titulo {
       display: flex;
@@ -735,7 +747,7 @@ const data = await fetchData();
       row-gap: 30px;
       column-gap: 20px;
     }
-    #previousButton  {
+    #previousButton {
       grid-column: 1;
       grid-row: 2;
     }
@@ -751,6 +763,15 @@ const data = await fetchData();
       grid-column: 2;
       grid-row: 2;
     }
+    #hintList {
+      list-style-type: none;
+      padding: 0;
+    }
 
+    .hintItem {
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-bottom: 1px solid #ccc;
+    }
   }
 </style>

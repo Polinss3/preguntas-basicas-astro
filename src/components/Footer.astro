@@ -2,17 +2,23 @@
   <p>© 2023 Astro</p>
 </footer>
 
-
 <style>
+  footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #a7a7a7;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    height: 60px;
+    z-index: 1000;
+  }
+
+  @media screen and (max-width: 765px) {
     footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background-color: #a7a7a7;
-      color: white;
-      text-align: center;
-      padding: 20px;
-      height: 60px;
-      z-index: 1000;
+      padding: 10px;
+      height: 30px;
     }
+  }
 </style>

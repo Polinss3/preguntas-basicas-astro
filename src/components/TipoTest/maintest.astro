@@ -1,0 +1,104 @@
+---
+import { useState, useEffect } from 'react';
+import OpcionTest from './pruebaboton.astro';
+import turso from '../../lib/turso';
+
+// Función para obtener los datos de la base de datos
+async function fetchData() {
+  try {
+    const result = await turso.execute("SELECT * FROM questionsTable");
+    return result.rows; // Asumiendo que el resultado tiene una propiedad `rows`
+  } catch (error) {
+    console.error("Error executing query:", error);
+    return [];
+  }
+}
+
+// Función para obtener un número entero aleatorio en un rango dado
+function getRandomInt(min:number, max:number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Función para ordenar aleatoriamente un array
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+const App = () => {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [preguntaAHacer, setPreguntaAHacer] = useState('');
+  const [respuestaCorrecta, setRespuestaCorrecta] = useState('');
+  const [opciones, setOpciones] = useState([]);
+
+  useEffect(() => {
+    fetchData().then(data => {
+      setData(data);
+      updateQuestion(data);
+    });
+  }, []);
+
+  const updateQuestion = (data) => {
+    const filteredData = data.filter((item) => item.category3 === "Capitales");
+    setFilteredData(filteredData);
+
+    const randomQuestionIndex = getRandomInt(0, filteredData.length - 1);
+    const pregunta = filteredData[randomQuestionIndex].question;
+    const respuesta = filteredData[randomQuestionIndex].answer;
+
+    let opciones = [respuesta];
+
+    while (opciones.length < 4) {
+      const randomIndex = getRandomInt(0, data.length - 1);
+      const randomAnswer = data[randomIndex].answer;
+
+      if (!opciones.includes(randomAnswer)) {
+        opciones.push(randomAnswer);
+      }
+    }
+
+    opciones = shuffleArray(opciones);
+
+    setPreguntaAHacer(pregunta);
+    setRespuestaCorrecta(respuesta);
+    setOpciones(opciones);
+  };
+
+  const handleOptionClick = (selectedOption) => {
+    if (selectedOption === respuestaCorrecta) {
+      console.log("Respuesta correcta!");
+      updateQuestion(data);
+    } else {
+      console.log("Respuesta incorrecta.");
+    }
+  };
+
+  return (
+    <>
+      <section class="seccion-tipo-test">
+        <article class="article-titulo-test">
+          <h1>Test preguntas básicas</h1>
+        </article>
+        <article class="article-preguntas-test">
+          <h2>{preguntaAHacer}</h2>
+        </article>
+        <article class="article-respuesta-escrita-test">
+          {opciones.map((opcion, index) => (
+            <OpcionTest key={index} id={index} text={String(opcion)} onClick={() => handleOptionClick(opcion)} />
+          ))}
+        </article>
+      </section>
+    </>
+  );
+};
+
+export default App;
+---
+
+<App />
